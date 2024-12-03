@@ -17,15 +17,21 @@ config:
   files:
     data: battery.csv
 
+addons:
+  Battery:
+    degradation_perc_per_cycle: 4.0e-5  # 20% after 5000 cycles
+
 carriers:
   electricity: {}
 
 components:
   battery:
-    type: SimpleBatteryCycleCosts
+    type: SimpleBattery
     connect_to: grid
     power: <battery_power>
     hours: <battery_hours>
+    config:
+      cost_per_kwh_degraded: 2750.0
 
   grid:
     type: Node
