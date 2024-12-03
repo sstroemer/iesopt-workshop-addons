@@ -5,6 +5,7 @@ from plotly.subplots import make_subplots
 
 
 model = iesopt.run("battery.iesopt.yaml")
+# model = iesopt.run("battery.iesopt.yaml", parameters=dict(battery_eff_rt=0.85))
 
 generation = model.results.components["pv"].exp.value
 curtailment = model.get_component("pv").ub.value - generation
