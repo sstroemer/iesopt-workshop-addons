@@ -1,0 +1,32 @@
+parameters:
+  in: null
+  out: null
+  p_nom: 1.5
+  t_cold: null
+  eta: 0.5
+  degree_loss_per_kW: null
+
+components:
+  heatpump:
+    type: Unit
+    inputs: {electricity: <in>}
+    outputs: {heat: <self>.heating_loop}
+    conversion: 1 electricity -> 0 heat
+    capacity: <p_nom> in:electricity
+  
+  heating_loop:
+    type: Node
+    carrier: heat
+  
+  radiator:
+    type: Unit
+    inputs: {heat: <self>.heating_loop}
+    outputs: {heat: <out>}
+    conversion: 1 heat -> 0 heat
+    capacity: 999 in:heat
+  
+  temperature:
+    type: Decision
+    lb: 30
+    ub: 80
+    cost: <upgrade_cost>

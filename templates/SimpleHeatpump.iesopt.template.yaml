@@ -1,0 +1,15 @@
+parameters:
+  in: null
+  out: null
+  p_nom: 1.5
+  t_hot: 60.0
+  t_cold: null
+  eta: 0.5
+  degree_loss_per_kW: null
+
+component:
+  type: Unit
+  inputs: {electricity: <in>}
+  outputs: {heat: <out>}
+  conversion: 1 electricity -> ((<t_hot> + 237.15) / (<t_hot> - <t_cold>)) * <eta> * <deg_per_kW> heat
+  capacity: <p_nom> in:electricity

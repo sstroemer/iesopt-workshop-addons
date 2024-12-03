@@ -1,0 +1,32 @@
+parameters:
+  connect_to: null
+  power: null
+  hours: null
+  eff_rt: 0.85
+  cost_per_kwh: 0.11
+
+components:
+  storage:
+    type: Node
+    carrier: electricity
+    has_state: true
+    state_lb: 0.1 * <power> * <hours>
+    state_ub: 0.9 * <power> * <hours>
+
+  charging:
+    type: Connection
+    node_from: <connect_to>
+    node_to: <self>.storage
+    lb: 0
+    ub: <power>
+    loss: 1.0 - sqrt(<eff_rt>)
+    cost: <cost_per_kwh> / 2.0
+
+  discharging:
+    type: Connection
+    node_from: <self>.storage
+    node_to: <connect_to>
+    lb: 0
+    ub: <power>
+    loss: 1.0 - sqrt(<eff_rt>)
+    cost: <cost_per_kwh> / 2.0
