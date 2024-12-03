@@ -22,6 +22,7 @@ function construct_variables!(model::JuMP.Model, config::Dict)
             lower_bound = 0,
             upper_bound = total_capacity,
             container = Array,  # This is important, since JuMP does not "see" that our "T" allows for arrays.
+            base_name = make_base_name(battery, "useable_capacity"),
         )
     end
 
