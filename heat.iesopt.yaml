@@ -1,0 +1,56 @@
+parameters:
+  deg_per_kW: 0.214
+  hp_pnom: 1.5
+  house_tlo: 23
+  house_thi: 23
+
+config:
+  general:
+    version:
+      core: 2.1.0
+    verbosity:
+      core: warn
+      progress: off
+      solver: off    
+  optimization:
+    problem_type: LP
+    snapshots:
+      count: 744
+  files:
+    data: heat.csv
+
+carriers:
+  electricity: {}
+  heat: {}
+
+components:
+  heatpump:
+    type: SimpleHeatpump
+    in: grid
+    out: house
+    p_nom: <hp_pnom>
+    t_cold: temperature@data
+
+  house:
+    type: Node
+    carrier: heat
+    has_state: true
+    state_lb: <house_tlo>
+    state_ub: <house_thi>
+  
+  demand:
+    type: Profile
+    carrier: heat
+    node_from: house
+    value: heat_demand_kW@data * <deg_per_kW>
+
+  grid:
+    type: Node
+    carrier: electricity
+  
+  buy_electricity:
+    type: Profile
+    carrier: electricity
+    mode: create
+    node_to: grid
+    cost: price@data

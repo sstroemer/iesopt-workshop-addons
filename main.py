@@ -4,47 +4,41 @@ import numpy as np
 from plotly.subplots import make_subplots
 
 
-options = [
-    dict(battery_power=5, battery_hours=2),
-    dict(battery_power=10, battery_hours=1),
-    dict(battery_power=1, battery_hours=10),
-    dict(battery_power=2, battery_hours=5),
-]
+model = iesopt.run("heat.iesopt.yaml", skip_validation=True)
 
-for opt in options:
-    model = iesopt.run("battery.iesopt.yaml", parameters=opt, skip_validation=True)
-    discharging = sum(model.results.components["battery.discharging"].var.flow)
-    energy_bought = sum(model.results.components["energy_supplier"].exp.value) / 1e3
-    print(f"{opt}")
-    print(f"      ╰──>  {model.objective_value:.1f} EUR      {discharging:.1f} kWh  |  (buy: {energy_bought:.1f} MWh)\n")
+# => infeasible because not enough HP power ( ~1.81 kW would be necessary )
 
+model = iesopt.run(
+    "heat.iesopt.yaml", parameters=dict(hp_pnom=1.85), skip_validation=True
+)
+model.objective_value
 
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# BEFORE
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# {'battery_power': 5, 'battery_hours': 2}
-#       ╰──>  2746.0 EUR  |  1322.2 kWh  |  (buy: 17.30 MWh)
+# => OR .... more flexibility in the house temperature
 
-# {'battery_power': 10, 'battery_hours': 1}
-#       ╰──>  2746.0 EUR  |  1322.2 kWh  |  (buy: 17.30 MWh)
+model = iesopt.run(
+    "heat.iesopt.yaml", parameters=dict(house_tlo=20), skip_validation=True
+)
+model.objective_value
 
-# {'battery_power': 1, 'battery_hours': 10}
-#       ╰──>  2751.1 EUR  |  1106.1 kWh  |  (buy: 17.49 MWh)
+# Plot: temperature profile
+model.results.components["house"].var.state
+temperature_profile = model.results.components["house"].var.state[0:168]
 
-# {'battery_power': 2, 'battery_hours': 5}
-#       ╰──>  2746.1 EUR  |  1317.7 kWh  |  (buy: 17.30 MWh)
-
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# NOW
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# {'battery_power': 5, 'battery_hours': 2}
-#       ╰──>  2745.9 EUR      1319.3 kWh  |  (buy: 17.3 MWh)
-
-# {'battery_power': 10, 'battery_hours': 1}
-#       ╰──>  2745.9 EUR      1319.3 kWh  |  (buy: 17.3 MWh)
-
-# {'battery_power': 1, 'battery_hours': 10}
-#       ╰──>  2751.0 EUR      1105.7 kWh  |  (buy: 17.5 MWh)
-
-# {'battery_power': 2, 'battery_hours': 5}
-#       ╰──>  2746.0 EUR      1314.9 kWh  |  (buy: 17.3 MWh)
+go.Figure().add_hline(
+    y=20, line_dash="dash", annotation_text="20°C", annotation_position="bottom right"
+).add_hline(
+    y=23, line_dash="dash", annotation_text="23°C", annotation_position="bottom right"
+).add_trace(
+    go.Scatter(
+        x=np.arange(len(temperature_profile)),
+        y=temperature_profile,
+        mode="lines",
+        name="House Temperature",
+        line=dict(width=2),  # Set line thickness to 2
+    )
+).update_layout(
+    title="Temperature Profile",
+    xaxis_title="Time",
+    yaxis_title="Temperature (°C)",
+    yaxis=dict(range=[18, 25]),  # Set y-axis range from 18 to 25 degrees
+).show()
