@@ -1,0 +1,43 @@
+config:
+  general:
+    version:
+      core: 2.1.0
+    verbosity:
+      core: warn
+      progress: off
+      solver: off
+  optimization:
+    problem_type: LP
+    snapshots:
+      count: 8760
+  files:
+    data: battery.csv
+
+carriers:
+  electricity: {}
+
+components:
+  grid:
+    type: Node
+    carrier: electricity
+  
+  pv:
+    type: Profile
+    carrier: electricity
+    node_to: grid
+    mode: ranged
+    lb: 0
+    ub: pv@data
+  
+  demand:
+    type: Profile
+    carrier: electricity
+    node_from: grid
+    value: demand@data
+  
+  energy_supplier:
+    type: Profile
+    carrier: electricity
+    node_to: grid
+    mode: create
+    cost: 0.15
