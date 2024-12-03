@@ -22,7 +22,7 @@ carriers:
 
 components:
   battery:
-    type: SimpleBattery
+    type: SimpleBatteryCycleCosts
     connect_to: grid
     power: <battery_power>
     hours: <battery_hours>

@@ -14,5 +14,6 @@ options = [
 for opt in options:
     model = iesopt.run("battery.iesopt.yaml", parameters=opt, skip_validation=True)
     discharging = sum(model.results.components["battery.discharging"].var.flow)
+    energy_bought = sum(model.results.components["energy_supplier"].exp.value) / 1e3
     print(f"{opt}")
-    print(f"      ╰──>  {model.objective_value:.1f} EUR  |  {discharging:.1f} kWh\n")
+    print(f"      ╰──>  {model.objective_value:.1f} EUR      {discharging:.1f} kWh  |  (buy: {energy_bought:.1f} MWh)\n")
