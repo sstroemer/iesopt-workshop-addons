@@ -1,3 +1,8 @@
+parameters:
+  battery_eff_rt: 0.75
+  battery_power: 4
+  battery_hours: 2
+
 config:
   general:
     version:
@@ -17,12 +22,32 @@ carriers:
   electricity: {}
 
 components:
-  grid:
+  storage:
     type: Node
     carrier: electricity
     has_state: true
     state_lb: 0
-    state_ub: 8
+    state_ub: <battery_power> * <battery_hours>
+
+  charging:
+    type: Connection
+    node_from: grid
+    node_to: storage
+    lb: 0
+    ub: <battery_power>
+    loss: 1.0 - sqrt(<battery_eff_rt>)
+
+  discharging:
+    type: Connection
+    node_from: storage
+    node_to: grid
+    lb: 0
+    ub: <battery_power>
+    loss: 1.0 - sqrt(<battery_eff_rt>)
+
+  grid:
+    type: Node
+    carrier: electricity
   
   pv:
     type: Profile
