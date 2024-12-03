@@ -4,7 +4,7 @@ import numpy as np
 
 
 # Run the model
-model = iesopt.run("bess_01.iesopt.yaml", skip_validation=True)
+model = iesopt.run("battery.iesopt.yaml")
 
 # Extract generation and curtailment data
 generation = model.results.components["pv"].exp.value
