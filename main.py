@@ -4,41 +4,46 @@ import numpy as np
 from plotly.subplots import make_subplots
 
 
-model = iesopt.run("heat.iesopt.yaml", skip_validation=True)
-
-# => infeasible because not enough HP power ( ~1.81 kW would be necessary )
-
 model = iesopt.run(
-    "heat.iesopt.yaml", parameters=dict(hp_pnom=1.85), skip_validation=True
+    "heat.iesopt.yaml",
+    parameters=dict(hp_pnom=4.0, upgrade_cost=1000.0),
+    skip_validation=True,
 )
-model.objective_value
 
-# => OR .... more flexibility in the house temperature
+# => see "heat_temp.html"
 
-model = iesopt.run(
-    "heat.iesopt.yaml", parameters=dict(house_tlo=20), skip_validation=True
-)
-model.objective_value
+# Heatmap: Opt. TEMP based on PNOM and COST.
 
-# Plot: temperature profile
-model.results.components["house"].var.state
-temperature_profile = model.results.components["house"].var.state[0:168]
+# results = []
+# pnoms = np.concatenate(
+#     [
+#         np.arange(2.15, 2.65, 0.0625),
+#         np.arange(2.65, 3.15, 0.125),
+#         np.arange(3.15, 4.65, 0.25),
+#         np.arange(4.65, 7.16, 0.5),
+#     ]
+# )
+# for pnom in pnoms:
+#     for cost in np.concatenate([np.arange(0, 1500, 125), np.arange(1500, 5001, 500)]):
+#         model = iesopt.run(
+#             "heat.iesopt.yaml",
+#             parameters=dict(hp_pnom=pnom, upgrade_cost=cost),
+#             skip_validation=True,
+#         )
+#         temp = iesopt.jump_value(model.get_component("heating").temperature.var.value)
+#         results.append((pnom, cost, temp))
+#         print(".", end="", flush=True)
+# print()
 
-go.Figure().add_hline(
-    y=20, line_dash="dash", annotation_text="20°C", annotation_position="bottom right"
-).add_hline(
-    y=23, line_dash="dash", annotation_text="23°C", annotation_position="bottom right"
-).add_trace(
-    go.Scatter(
-        x=np.arange(len(temperature_profile)),
-        y=temperature_profile,
-        mode="lines",
-        name="House Temperature",
-        line=dict(width=2),  # Set line thickness to 2
-    )
-).update_layout(
-    title="Temperature Profile",
-    xaxis_title="Time",
-    yaxis_title="Temperature (°C)",
-    yaxis=dict(range=[18, 25]),  # Set y-axis range from 18 to 25 degrees
-).show()
+# go.Figure(
+#     data=go.Heatmap(
+#         z=[float(it[2]) for it in results],
+#         x=[float(it[0]) for it in results],
+#         y=[float(it[1]) for it in results],
+#         colorscale="Viridis",
+#     )
+# ).update_layout(
+#     title="Optimal Temperature",
+#     xaxis_title="Heatpump Power",
+#     yaxis_title="Upgrade Cost",
+# ).write_html("heat_temp.html")

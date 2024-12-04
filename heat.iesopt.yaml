@@ -1,7 +1,7 @@
 parameters:
-  deg_per_kW: 0.214
+  upgrade_cost: 0
   hp_pnom: 1.5
-  house_tlo: 23
+  house_tlo: 20
   house_thi: 23
 
 config:
@@ -9,27 +9,33 @@ config:
     version:
       core: 2.1.0
     verbosity:
-      core: warn
+      core: error
       progress: off
       solver: off    
   optimization:
     problem_type: LP
     snapshots:
       count: 744
+    solver:
+      name: ipopt
+      log: false
   files:
     data: heat.csv
+
+addons:
+  Heating: {}
 
 carriers:
   electricity: {}
   heat: {}
 
 components:
-  heatpump:
-    type: SimpleHeatpump
+  heating:
+    type: SimpleHeating
     in: grid
     out: house
-    p_nom: <hp_pnom>
     t_cold: temperature@data
+    p_nom: <hp_pnom>
 
   house:
     type: Node
@@ -42,7 +48,7 @@ components:
     type: Profile
     carrier: heat
     node_from: house
-    value: heat_demand_kW@data * <deg_per_kW>
+    value: heat_demand_kW@data * 0.214
 
   grid:
     type: Node
